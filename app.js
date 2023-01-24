@@ -1,7 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
-const cors = require('cors')
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
 
 let users = [];
@@ -9,44 +10,34 @@ let users = [];
 let app = express();
 app.use(bodyParser.json());
 app.use(cors())
+app.use(cookieParser());
 
-const PORT = 3000;
+const PORT = 5000;
 app.listen( PORT, () => {
     console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 })
 
+
+// Raíz. Muestra la página HTML
 app.get("/", (req, res, next) => {
     res.sendFile( path.join(__dirname, './index.html') );
 });
 
-app.get("/url", (req, res, next) => {
-    res.json(["ASIR", "SMR", "DAW", "DAM"]);
-});
-
-app.post("/test/:id", (req, res) => {
-    let data = {
-        status: "ok",
-        headers: req.headers,
-        params: req.params,
-        query: req.query
-    };
-    res .status(200)
-        .json( data )
-});
 
 
-
-
-app.get("/test/:id", (req, res) => {
-    let data = {
-        name: "Testing",
-        username: "Apellido",
-        value: 235,
-        id: req.params.id
-    };
-    res .status(200)
-        .json ( data );
+// Ejercicio cookies
+app.get("/cookie", (req, res) => {
+    res.cookie('mi_cookie', '123456', {
+        maxAge: 60 * 60 * 1000, // Duración de una hora
+        httpOnly: true, // Protocolo http
+        sameSite: false, // No se enviará en peticiones cross-site
+      })
+       .send('Se ha enviado la cookie');
 })
+
+
+
+
 
 app.post("/api/register", (req, res, next) => {
     // Estructura del JSON
