@@ -12,13 +12,56 @@
 
     <h2>Funciones de la API</h2>
 
-    <h3>POST /test/:id</h3>
-    <p>Devuelve un fichero con la siguiente información:</p>
+    <h3>POST /api/register/</h3>
+    <p>Registra un usuario</p>
+    <p>El cuerpo del mensaje debe contener un JSON con la siguiente estructura</p>
+    <pre>
+        {
+            fullname: '',
+            username: '',
+            email: '',
+            pass: '',
+            height: '',
+            weight: '',
+            birthday: '',
+            activities: []
+        }
+    </pre>
+    <p>Devuelve:</p>
     <ul>
-        <li><b>Cabeceras</b> de la solicitud HTTP</li>
-        <li><b>Query String</b> de la solicitud HTTP, es decir, todos los pares nombre - valor que hay en la URI después del símbolo de la interrogación.</li>
-        <li><b>Parámetros REST</b>, solo acepta un parámetro que es el valor :id de la URI</li>
+        <li>Status 400 si algún campo está vacío. En el cuerpo un JSON con información sobre el error.</li>
+        <li>Status 409 si el nombre de usuario ya existe. En el cuerpo un JSON con información sobre el error</li>
+        <li>Status 200 si se ha creado correctamente. El body contiene JSON con el id único asignado al usuario</li>
     </ul>
+
+    <hr>
+
+    <h3>GET /api/checkuser?name=XXXX</h3>
+
+    <p>Se le pasa en el query string un nombre de usuario y devuelve un JSON indicando si ya existe o no un usuario en el sistema con dicho nombre</p>
+
+    <hr>
+
+    <h3>GET /api/users</h3>
+    <p>Devuelve un listado con la información de todos los usuarios registrados</p>
+
+    <hr>
+
+    <h3>DELETE /api/user/id=XXXX</h3>
+    <p>Elimina el usuario cuyo id se indique en la query string</p>
+
+    <hr>
+
+    <h3>GET /api/login</h3>
+    <p>Solicita el inicio de sesión del usuario. Se deben pasar las credenciales del usuario en el cuerpo del mensaje</p>
+    <p>AÚN NO IMPLEMENTADO</p>
+
+    <pre>
+    {
+        username: '',
+        pass: ''
+    }
+    </pre>
 </head>
 <body>
     

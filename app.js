@@ -1,11 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
+
+let users = [];
 
 let app = express();
 app.use(bodyParser.json());
 
-app.listen( 3000, () => {
+app.listen( 5000, () => {
     console.log("Servidor ejecutándose en el puerto 3000");
 })
 
@@ -42,27 +45,121 @@ app.get("/test/:id", (req, res) => {
         .json ( data );
 })
 
-app.post("/register", (req, res, next) => {
-    // Suponemos que el usuario victor ya existe
-    let data = req.body;
-
-    if ( data.name == "victor") {
-        res
-            .status(400)
-            .json({
-                success: false,
-                msg: "El usuario ya existe",
-                username: data.name
-            })
-    }
-    else {
-        // Aquí se guardarían los datos en la Base de datos
-        res
-            .status(200)
-            .json( {
-                success: true,
-                msg: "Se ha creado el usuario",
-            } )
-    }
+app.post("/api/register", (req, res, next) => {
+    // Estructura del JSON
+    // {
+    //     fullname: '',
+    //     username: '',
+    //     email: '',
+    //     pass: '',
+    //     height: '',
+    //     weight: '',
+    //     birthday: '',
+    //     activities: ''
+    // }
+    // Estructura del JSON de vuelta:
+    // {
+    //     success: true|false,
+    //     msg: '',     // ERROR: Mensaje del error
+    //     code: ''     // ERROR: Código del error
+    //     id: ''       // ÉXITO: identificador asignado al usuario
+    // }
     
+    let {fullname, username, email, pass, height, weight, birthday, activities} = req.body;
+
+    // ERROR: algún campo está vacío
+    if (!(fullname && username && email && pass && height && weight && birthday && activities)) {
+        res.status(400)     // Bad request
+           .json( {
+                success: false,
+                msg: "Alguno de los campos es incorrecto o está vacío",
+                code: "001"
+           })
+    }
+
+    // ERROR: el usuario que ya existe
+    if ( username == 'admin') {
+        res.status(409)     // Conflict
+           .json( {
+                success: false,
+                msg: "El nombre de usuario ya existe",
+                code: "002"
+           })
+    }
+
+    // ÉXITO. Aquí la guardo en memoria
+    const id = randomUUID();
+    users.push({
+        id,
+        fullname,
+        username,
+        email,
+        pass,   // Por comodidad la guardo en plano, pero habría que guardar su hash en la base de datos
+        height,
+        weight,
+        birthday,
+        activities
+    })
+    res.status(200)
+        .json( {
+            success: true,
+            id,
+            msg: "Se ha creado el usuario",
+        } )
+    }
+)
+
+app.get('/api/checkuser', (req, res) => {
+    let username = req.query?.username;
+
+    if (!username) {
+        res.status(400)
+           .json({
+                success: false,
+                msg: "No se ha indicado el nombre del parámetro"
+           })
+    }
+
+    // Buscamos el nombre de usuario en la base de datos (en este caso nuestro array)
+    if (users.filter( (item) => item.username == username).length == 0) {
+        res.status(200) 
+           .json( {
+                username,
+                "exists": false
+        })
+    } else {
+        res.status(200) 
+           .json( {
+                username,
+                "exists": true
+           })
+    }
+})
+
+
+app.get('/api/users', (req, res) => {
+    res.status(200)
+       .json(users);
+})
+
+
+// DELETE /api/users?id=XXXXX
+app.delete('/api/users', (req, res) => {
+    id = req.query.id;
+
+    if (!users.find((item) => item.id == id)) {
+        res.status(400)
+       .json({
+            success: false,
+            msg: "No existe ningún usuario con ese identificador"
+       })
+    } else {
+        users = users.filter( (item) => item.id != id );
+        res.status(200)
+           .json({
+                success: true,
+                id
+           })
+    }
+
 })
