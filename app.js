@@ -8,8 +8,9 @@ let users = [];
 let app = express();
 app.use(bodyParser.json());
 
-app.listen( 5000, () => {
-    console.log("Servidor ejecutándose en el puerto 3000");
+const PORT = 3000;
+app.listen( PORT, () => {
+    console.log(`Servidor ejecutándose en el puerto ${PORT}`);
 })
 
 app.get("/", (req, res, next) => {
@@ -74,17 +75,19 @@ app.post("/api/register", (req, res, next) => {
                 success: false,
                 msg: "Alguno de los campos es incorrecto o está vacío",
                 code: "001"
-           })
+           });
+        return;
     }
 
     // ERROR: el usuario que ya existe
-    if ( username == 'admin') {
+    if ( users.find( (item) => item.username == username )) {
         res.status(409)     // Conflict
            .json( {
                 success: false,
                 msg: "El nombre de usuario ya existe",
                 code: "002"
            })
+        return;
     }
 
     // ÉXITO. Aquí la guardo en memoria
@@ -101,7 +104,7 @@ app.post("/api/register", (req, res, next) => {
         activities
     })
     res.status(200)
-        .json( {
+       .json( {
             success: true,
             id,
             msg: "Se ha creado el usuario",
@@ -137,6 +140,7 @@ app.get('/api/checkuser', (req, res) => {
 })
 
 
+// GET /api/users
 app.get('/api/users', (req, res) => {
     res.status(200)
        .json(users);
@@ -161,5 +165,34 @@ app.delete('/api/users', (req, res) => {
                 id
            })
     }
+
+})
+
+// PUT /api/users
+app.put('/api/user', (req, res) => {
+    let {id, fullname, email, pass, height, weight, birthday, activities} = req.body;
+
+    let user = users.find( (item) => item.id == id);
+    
+    if (user) {
+        if (fullname) user.fullname = fullname;
+        if (email) user.email = email;
+        if (pass) user.pass = pass;
+        if (weight) user.weight = pass;
+        if (height) user.height = height;
+        if (birthday) user.birthday = birthday;
+        if (activities) user.activities = activities;
+        res.status(200)
+           .json({
+                success: true
+           })
+    } else {
+        res.status(400)
+           .json({
+            success: false,
+            msg: "El usuario no existe"
+           })
+    }
+
 
 })
