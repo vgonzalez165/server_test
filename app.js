@@ -1,12 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
+const cors = require('cors')
 const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
 
 let users = [];
 
 let app = express();
 app.use(bodyParser.json());
+app.use(cors())
 
 const PORT = 3000;
 app.listen( PORT, () => {
