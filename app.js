@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
 
 let users = [];
@@ -25,16 +26,27 @@ app.get("/", (req, res, next) => {
 
 
 
-// Ejercicio cookies
-app.get("/cookie", (req, res) => {
-    res.cookie('mi_cookie', '123456', {
-        maxAge: 60 * 60 * 1000, // Duración de una hora
-        httpOnly: true, // Protocolo http
-        sameSite: false, // No se enviará en peticiones cross-site
-      })
-       .send('Se ha enviado la cookie');
-})
+// // Ejercicio cookies
+// app.get("/cookie", (req, res) => {
+//     res.cookie('mi_cookie', '123456', {
+//         maxAge: 60 * 60 * 1000, // Duración de una hora
+//         httpOnly: true, // Protocolo http
+//         sameSite: false, // No se enviará en peticiones cross-site
+//       })
+//        .send('Se ha enviado la cookie');
+// })
 
+
+function generateAccessToken(username) {
+    return jwt.sign(username, 'S3cr3T', { expiresIn: '1800s' });
+  }
+
+app.post("/login", (req, res) => {
+    const {username, pass} = req.body;
+    const token = generateAccessToken({ username: req.body.username });
+    res.json(token);
+    
+})
 
 
 
