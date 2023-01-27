@@ -2,16 +2,16 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
+
+const jwt = require('jsonwebtoken');
+const secret = 'S3cr3T';
 
 let users = [];
 
 let app = express();
 app.use(bodyParser.json());
 app.use(cors())
-app.use(cookieParser());
 
 const PORT = 5000;
 app.listen( PORT, () => {
@@ -25,27 +25,26 @@ app.get("/", (req, res, next) => {
 });
 
 
-
-// // Ejercicio cookies
-// app.get("/cookie", (req, res) => {
-//     res.cookie('mi_cookie', '123456', {
-//         maxAge: 60 * 60 * 1000, // Duración de una hora
-//         httpOnly: true, // Protocolo http
-//         sameSite: false, // No se enviará en peticiones cross-site
-//       })
-//        .send('Se ha enviado la cookie');
-// })
-
-
 function generateAccessToken(username) {
-    return jwt.sign(username, 'S3cr3T', { expiresIn: '1800s' });
+    return jwt.sign( username, secret, { expiresIn: '1800s' });
   }
 
 app.post("/login", (req, res) => {
     const {username, pass} = req.body;
-    const token = generateAccessToken({ username: req.body.username });
-    res.json(token);
-    
+    // Aquí comprobaría si las credenciales son válidas
+    if (users.find((item) => item.username.toLowerCase() == username.toLowerCase() && item.pass == pass)) {
+        const token = generateAccessToken({ username: req.body.username });
+        res.json(token);
+    } else {
+        console.log("bad");
+        res.status(401);
+    }
+})
+
+app.get("/api/test", (req, res) => {
+    const headers = req.headers;
+    let decoded = jwt.verify(headers.authorization.split(' ')[1], secret);
+    console.log(decoded);
 })
 
 
