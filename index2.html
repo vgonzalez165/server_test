@@ -10,48 +10,111 @@
 
     <p>Cutre versión local de un servidor REST para realizar pruebas.</p>
 
-    <h2>Funciones de la API</h2>
+    <h1>Funciones de la API</h1>
 
-    <h3>POST /api/register/</h3>
-    <p>Registra un usuario</p>
-    <p>El cuerpo del mensaje debe contener un JSON con la siguiente estructura</p>
+    <hr>
+
+    <h2>POST /api/register/</h2>
+    <p>Registra un usuario. El cuerpo del mensaje debe contener un JSON con los datos del usuario. Todos los campos son obligatorios.
+       No se realiza ninguna comprobación en el servidor salvo que contengan algún valor.</p>
+
+    <h4>Headers</h4>
+    <p>Ninguna especial</p>
+
+    <h4>Estructura del cuerpo del mensaje</h4>
     <pre>
-        {
-            fullname: '',
-            username: '',
-            email: '',
-            pass: '',
-            height: '',
-            weight: '',
-            birthday: '',
-            activities: []
-        }
+    {
+        fullname: '<i>string</i>',
+        username: '<i>string</i>',
+        email: '<i>string</i>',
+        pass: '<i>string</i>',
+        height: '<i>string</i>',
+        weight: '<i>string</i>',
+        birthday: '<i>string</i>',
+        activities: [<i>array</i>]
+    }
     </pre>
-    <p>Devuelve:</p>
+
+    <h4>Devuelve:</h4>
     <ul>
         <li>Status 400 si algún campo está vacío. En el cuerpo un JSON con información sobre el error.</li>
         <li>Status 409 si el nombre de usuario ya existe. En el cuerpo un JSON con información sobre el error</li>
         <li>Status 200 si se ha creado correctamente. El body contiene JSON con el id único asignado al usuario</li>
     </ul>
 
+
     <hr>
 
-    <h3>GET /api/checkuser?name=XXXX</h3>
 
+    <h2>POST /api/login/</h2>
+    <p>Inicia sesión para obtener un JWT.</p>
+
+    <h4>Cuerpo del mensaje</h4>
+    <pre>
+        {
+            username: '<i>string</i>',
+            pass: '<i>string</i>'
+        }
+    </pre>
+
+    <h4>Devuelve:</h4>
+    <ul>
+        <li>Status 401 si las credenciales no son válidas.</li>
+        <li>Status 200 si las credenciales son válidas. En el cuerpo del mensaje hay un JSON con el token, el nombre de usuario y su identificador. 
+            En el cuerpo del mensaje devuelve un JSON con los campos: <pre>success</pre>, <pre>id</pre> y <pre>token</pre>.
+        </li>
+    </ul>
+
+
+    <hr>
+
+
+    <h2>GET /api/checkuser?name=XXXX</h2>
     <p>Se le pasa en el query string un nombre de usuario y devuelve un JSON indicando si ya existe o no un usuario en el sistema con dicho nombre</p>
 
+    <h4>Headers</h4>
+    <p>Ninguna en especial</p>
+
+    <h4>Query string</h4>
+    <p>Nombre del usuario de la forma <pre>?name=XXXX</pre></p>
+
+    <h4>Devuelve</h4>
+    <ul>
+        <li>Status 400 si falta el parámetro en el query string</li>
+        <li>Status 200 si se ha recibido la consulta</li>
+    </ul>
+
+
     <hr>
+
 
     <h3>GET /api/users</h3>
-    <p>Devuelve un listado con la información de todos los usuarios registrados</p>
+    <p>Devuelve un listado con la información de todos los usuarios registrados. </p>
+    <p><b>NO SEGURO</b> Solo para hacer pruebas</p>
+
 
     <hr>
 
-    <h3>DELETE /api/user/id=XXXX</h3>
-    <p>Elimina el usuario cuyo id se indique en la query string</p>
+
+    <h3>DELETE /api/user?id=XXXX</h3>
+    <h3>DELETE /api/user?username=XXXX</h3>
+    <p>Elimina el usuario cuyo id o nombre de usuario se indique en la query string. Solo el propio usuario puede eliminar su perfil.</p>
+    <p>Los usuarios no se eliminan realmente, sino que se marcan en la base de datos como no activos</p>
+
+    <h4>Headers</h4>
+    <pre>Authorization: {token}</pre>
+
+    <h4>Devuelve</h4>
+    <ul>
+        <li>Status 400 si no se ha indicado el nombre de usuario o el id</li>
+        <li>Status 404 si el usuario no existe</li>
+        <li>Status 200 si el usuario se ha eliminado correctamente</li>
+    </ul>
+
 
     <hr>
 
+    
     <h3>GET /api/login</h3>
     <p>Solicita el inicio de sesión del usuario. Se deben pasar las credenciales del usuario en el cuerpo del mensaje</p>
     <p>AÚN NO IMPLEMENTADO</p>

@@ -4,10 +4,24 @@ const path = require('path');
 const cors = require('cors');
 const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
 
-const jwt = require('jsonwebtoken');
-const secret = 'S3cr3T';
+const secret = 'This 1s S3cr3T';
 
-let users = [];
+// Base de datos de usuarios. Por comodidad ya hay uno precargado
+let users = [
+    {
+        id: '10b69d2b-26c6-4715-b510-eba42f9766f0',
+        username: 'victor',
+        fullname: 'Víctor J. González',
+        pass: '1234',
+        email: 'victor@mail.com',
+        height: 170,
+        weight: 70,
+        birthday: '01/01/2000',
+        activities: ['trail'],
+        active: true
+    }
+];     
+
 
 let app = express();
 app.use(bodyParser.json());
@@ -26,28 +40,29 @@ app.get("/", (req, res, next) => {
 
 
 function generateAccessToken(username) {
-    return jwt.sign( username, secret, { expiresIn: '1800s' });
+    return jwt.sign(username, secret, { expiresIn: '86400s' }); // Caducidad de 1 día
   }
 
-app.post("/login", (req, res) => {
+app.post("/api/login", (req, res) => {
     const {username, pass} = req.body;
-    // Aquí comprobaría si las credenciales son válidas
-    if (users.find((item) => item.username.toLowerCase() == username.toLowerCase() && item.pass == pass)) {
+    let user = users.find( (item) => item.username.toLowerCase() == username.toLowerCase() && item.pass == pass);
+    if ( user ) {
         const token = generateAccessToken({ username: req.body.username });
-        res.json(token);
+        res.status(200).json({
+            success: true,
+            username,
+            id: user.id,
+            token
+        });
     } else {
-        console.log("bad");
-        res.status(401);
+        res
+            .status(401)
+            .json({
+                success: 'false',
+                msg: 'Credenciales no válidas'
+            })
     }
 })
-
-app.get("/api/test", (req, res) => {
-    const headers = req.headers;
-    let decoded = jwt.verify(headers.authorization.split(' ')[1], secret);
-    console.log(decoded);
-})
-
-
 
 
 app.post("/api/register", (req, res, next) => {
@@ -105,7 +120,8 @@ app.post("/api/register", (req, res, next) => {
         height,
         weight,
         birthday,
-        activities
+        activities,
+        active: true
     })
     res.status(200)
        .json( {
@@ -147,28 +163,59 @@ app.get('/api/checkuser', (req, res) => {
 // GET /api/users
 app.get('/api/users', (req, res) => {
     res.status(200)
-       .json(users);
+       .json(users.filter( (item) => item.active ));
 })
 
 
-// DELETE /api/users?id=XXXXX
+// DELETE /api/users?id=XXXXX  || /api/users?username=XXXX
 app.delete('/api/users', (req, res) => {
-    id = req.query.id;
 
-    if (!users.find((item) => item.id == id)) {
-        res.status(400)
-       .json({
-            success: false,
-            msg: "No existe ningún usuario con ese identificador"
-       })
+    // ****************************************************************************************************************************************
+    // FALTA COMPROBAR EL TOKEN
+
+    let id = req.query.id;
+    let username = req.query.username;
+    let user;
+    if (id) {
+        user = users.find( (item) => item.id == id && item.active );
+    } else if (username) {
+        user = users.find( (item) => item.username == username && item.active );
     } else {
-        users = users.filter( (item) => item.id != id );
-        res.status(200)
-           .json({
-                success: true,
-                id
-           })
+        res.status(400).json({
+            success: false,
+            msg: "Falta el id o el nombre del usuario"
+        })
+        return;
     }
+
+    if (user) {
+        user.active = false;
+        res.status(200).json({
+            success: true,
+            msg: "Se ha eliminado correctamente el usuario"
+        })
+    } else {
+        res.status(404).json({
+            success: false,
+            msg: "No se ha encontrado el usuario"
+        })
+    }
+
+
+    // if (!users.find((item) => item.id == id)) {
+    //     res.status(400)
+    //    .json({
+    //         success: false,
+    //         msg: "No existe ningún usuario con ese identificador"
+    //    })
+    // } else {
+    //     users = users.filter( (item) => item.id != id );
+    //     res.status(200)
+    //        .json({
+    //             success: true,
+    //             id
+    //        })
+    // }
 
 })
 
