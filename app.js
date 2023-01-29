@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
 
 const secret = 'This 1s S3cr3T';
@@ -14,6 +15,18 @@ let users = [
         fullname: 'Víctor J. González',
         pass: '1234',
         email: 'victor@mail.com',
+        height: 170,
+        weight: 70,
+        birthday: '01/01/2000',
+        activities: ['trail'],
+        active: true
+    },
+    {
+        id: '10b69d2b-26c6-4715-b510-eba42f9767f0',
+        username: 'pepe',
+        fullname: 'Pepe Fernández ',
+        pass: '1234',
+        email: 'pepe@mail.com',
         height: 170,
         weight: 70,
         birthday: '01/01/2000',
@@ -167,14 +180,23 @@ app.get('/api/users', (req, res) => {
 })
 
 
+
+function isValidToken(token, username) {
+    try {
+        const json = jwt.verify(token, secret);
+        return (json.username == username);
+    } catch (e) {
+        return false;
+    }
+}
+
+
 // DELETE /api/users?id=XXXXX  || /api/users?username=XXXX
 app.delete('/api/users', (req, res) => {
 
-    // ****************************************************************************************************************************************
-    // FALTA COMPROBAR EL TOKEN
-
-    let id = req.query.id;
-    let username = req.query.username;
+    let {id} = req.query;
+    let {username} = req.query;
+    let token = req.headers.authorization;
     let user;
     if (id) {
         user = users.find( (item) => item.id == id && item.active );
@@ -185,6 +207,15 @@ app.delete('/api/users', (req, res) => {
             success: false,
             msg: "Falta el id o el nombre del usuario"
         })
+        return;
+    }
+
+    console.log("------")
+    if (!isValidToken(token, user.username)) {
+        res.status(401).json({
+            success: false,
+            msg: "Token no válido"
+        });
         return;
     }
 
