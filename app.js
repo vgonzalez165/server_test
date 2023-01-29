@@ -245,7 +245,6 @@ app.delete('/api/users', (req, res) => {
         return;
     }
 
-    console.log("------")
     if (!isValidToken(token, user.username)) {
         res.status(401).json({
             success: false,
@@ -287,15 +286,34 @@ app.delete('/api/users', (req, res) => {
 
 // PUT /api/users
 app.put('/api/user', (req, res) => {
-    let {id, fullname, email, pass, height, weight, birthday, activities} = req.body;
+    let {id, email, pass, height, weight, birthday, activities} = req.body;
+    let token = req.headers.authorization;
 
     let user = users.find( (item) => item.id == id);
+
+    console.log(user)
+
+    if (!user) {
+        res.status(400).json({
+            success: false,
+            msg: "Identificador no válido"
+        });
+        return;
+    }
+
+    if (!isValidToken(token, user.username)) {
+        res.status(401).json({
+            success: false,
+            msg: "Token no válido"
+        });
+        return;
+    }
     
     if (user) {
-        if (fullname) user.fullname = fullname;
+        // if (fullname) user.fullname = fullname;  // No se puede cambiar el nombre de usuario
         if (email) user.email = email;
         if (pass) user.pass = pass;
-        if (weight) user.weight = pass;
+        if (weight) user.weight = weight;
         if (height) user.height = height;
         if (birthday) user.birthday = birthday;
         if (activities) user.activities = activities;

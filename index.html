@@ -135,6 +135,26 @@
     <p>Obtiene un listado de todas las rutas</p>
     <p>Pendiente de finalizar, por ahora solo devuelve un listado de todas las rutas sin ningún tipo de filtrado y sin requerir token</p>
 
+
+    <hr>
+
+    <h4>PUT /api/user</h4>
+    <p>Modifica los datos de un usuario.</p>
+
+    <h4>Headers</h4>
+    <pre>Authorization: {token}</pre>
+
+    <h4>Body</h4>
+    <p>JSON con los datos del usuario que se quieran modificar. Es <b>obligatorio</b> el campo <pre>id</pre> para identificar al usuairo.</p>
     
+    <h4>Devuelve</h4>
+    <ul>
+        <li>Status 400 si el id no corresponde a ningún usuario o no se ha indicado</li>
+        <li>Status 401 si el token no es válido</li>
+        <li>Status 200 si el usuario se ha actualizado correctamente</li>
+    </ul>
+
+
+
 </body>
 </html>
