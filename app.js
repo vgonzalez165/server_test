@@ -35,6 +35,41 @@ let users = [
     }
 ];     
 
+let routes = [
+    {
+        id: '22a22d2b-26c6-4715-b510-eba42f9767f0',
+        route_name: 'Ruta de los Calderones',
+        distance: 12270,
+        max_height: 1672,
+        min_height: 1179,
+        pos_slope: 611,
+        neg_slope: 611,
+        circular: true,
+        start_lat: 42.82393,
+        start_lon: -5.77881,
+        user: '10b69d2b-26c6-4715-b510-eba42f9766f0',
+        date: '29/01/2023',
+        desc: 'La ruta se inicia en Piedrasecha, para tomar enseguida una vereda casi paralela al río. Destaca una gran roca silícica, muy llamativa por los líquenes amarillentos que la colonizan; es El Serrón. Pronto se llega a la fuente del Manadero y un poco más allá, la Cueva de las Palomas alberga una sencilla ermita rupestre que custodia la imagen de Nuestra Señora del Manadero. Su romería se celebra el último domingo de Julio, congregando a vecinos de toda la comarca. '
+    },
+    {
+        id: '22a22d2b-26c6-4715-b510-eba42f9767f0',
+        route_name: 'Subida al Vizcodillo',
+        distance: 16390,
+        max_height: 2104,
+        min_height: 1199,
+        pos_slope: 932,
+        neg_slope: 929,
+        circular: true,
+        start_lat: 42.2367748,
+        start_lon: -6.4616487,
+        user: '10b69d2b-26c6-4715-b510-eba42f9766f0',
+        date: '07/07/2022',
+        desc: 'A 1,5km pasando Truchillas desde Truchas hay un parking con un panel indicativo para subir al lago Truchillas,hasta el cual llego y atravieso por la salida del agua que forma el rio Truchilas, para subir a una cuota dos mil en primer lugar y acto seguido al Vizcodillo.Descenso por la laguna Malicioso hasta el coche.'
+    }
+]
+
+
+
 
 let app = express();
 app.use(bodyParser.json());
@@ -277,4 +312,12 @@ app.put('/api/user', (req, res) => {
     }
 
 
+})
+
+
+
+// GET /api/routes
+app.get('/api/routes', (req, res) => {
+    res.status(200)
+       .json(routes);
 })
