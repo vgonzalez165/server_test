@@ -245,6 +245,14 @@ app.delete('/api/users', (req, res) => {
         return;
     }
 
+    if (!user) {
+        res.status(400).json(({
+            success: false,
+            msg: "El usuario no existe"
+        }));
+        return;
+    }
+
     if (!isValidToken(token, user.username)) {
         res.status(401).json({
             success: false,
@@ -265,24 +273,58 @@ app.delete('/api/users', (req, res) => {
             msg: "No se ha encontrado el usuario"
         })
     }
+})
 
 
-    // if (!users.find((item) => item.id == id)) {
-    //     res.status(400)
-    //    .json({
-    //         success: false,
-    //         msg: "No existe ningún usuario con ese identificador"
-    //    })
-    // } else {
-    //     users = users.filter( (item) => item.id != id );
-    //     res.status(200)
-    //        .json({
-    //             success: true,
-    //             id
-    //        })
-    // }
+// GET /api/user?id=XXXXX  || /api/user?username=XXXX
+app.get('/api/user', (req, res) => {
+
+    let {id} = req.query;
+    let {username} = req.query;
+    let token = req.headers.authorization;
+    let user;
+    if (id) {
+        user = users.find( (item) => item.id == id && item.active );
+    } else if (username) {
+        user = users.find( (item) => item.username == username && item.active );
+    } else {
+        res.status(400).json({
+            success: false,
+            msg: "Falta el id o el nombre del usuario"
+        })
+        return;
+    }
+
+    if (!user) {
+        res.status(400).json(({
+            success: false,
+            msg: "El usuario no existe"
+        }));
+        return;
+    }
+
+    if (!isValidToken(token, user.username)) {
+        res.status(401).json({
+            success: false,
+            msg: "Token no válido"
+        });
+        return;
+    }
+
+    if (user) {
+        res.status(200).json(user)
+    } else {
+        res.status(404).json({
+            success: false,
+            msg: "No se ha encontrado el usuario"
+        })
+    }
 
 })
+
+    
+
+
 
 // PUT /api/users
 app.put('/api/user', (req, res) => {
@@ -338,4 +380,45 @@ app.put('/api/user', (req, res) => {
 app.get('/api/routes', (req, res) => {
     res.status(200)
        .json(routes);
+})
+
+
+app.get('/api/route', (req, res) => {
+    let filteredRoutes=[];
+    // Nombre de ruta ?name=XXXX
+    if (req.query.name) {
+        filteredRoutes = routes.filter( item => item.route_name.toLowerCase().includes(req.query.name.toLowerCase()));
+    }
+
+    // Distancia mínima ?min_dist=XXX   (en metros)
+    if (req.query.min_dist) {
+        filteredRoutes = routes.filter( item => item.distance > +req.query.min_dist );
+    }
+
+    // Distancia máxima ?max_dist=XXX   (en metros)
+    if (req.query.max_dist) {
+        filteredRoutes = routes.filter( item => item.distance < +req.query.max_dist );
+    }
+
+    // Desnivel mínimo ?min_slope=XXX   (en metros)
+    if (req.query.min_slope) {
+        filteredRoutes = routes.filter( item => item.slope > +req.query.min_slope );
+    }
+
+    // Desnivel máximo ?max_slope=XXX   (en metros)
+    if (req.query.max_slope) {
+        filteredRoutes = routes.filter( item => item.slope < +req.query.max_slope );
+    }
+
+    // Circular ?circular=XX            (true|false)
+    if (req.query.circular) {
+        filteredRoutes = routes.filter( item => item.circular != (req.query.circular  == 'false') );
+    }
+
+    // User ?user=XX                    (identificador del usuario)
+    if (req.query.user) {
+        filteredRoutes = routes.filter( item => item.user == req.query.user);
+    }
+    
+    res.status(200).json(filteredRoutes);
 })
