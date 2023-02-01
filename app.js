@@ -5,7 +5,22 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
 
+const fs=require('fs');
+const gpxParser = require('gpxparser');
+
 const secret = 'This 1s S3cr3T';
+
+
+function parseGPX( filename ) {
+    let gpx = new gpxParser();
+    gpx.parse(fs.readFileSync(filename, 'utf8'));
+    console.log("***************");
+    console.log(gpx.tracks[0]);   
+}
+
+parseGPX('./01.gpx')
+
+// var gpx = new DOMParser().parseFromString(fs.readFileSync('01.gpx', 'utf8'));
 
 // Base de datos de usuarios. Por comodidad ya hay uno precargado
 let users = [
@@ -322,10 +337,7 @@ app.get('/api/user', (req, res) => {
 
 })
 
-    
-
-
-
+ 
 // PUT /api/users
 app.put('/api/user', (req, res) => {
     let {id, email, pass, height, weight, birthday, activities} = req.body;
@@ -380,6 +392,22 @@ app.put('/api/user', (req, res) => {
 app.get('/api/routes', (req, res) => {
     res.status(200)
        .json(routes);
+})
+
+
+// GET /api/route/gpx?id=XXXX
+app.get('/api/route/gpx', (req, res) => {
+    let id = req.query.id;
+    let route = routes.find( (item) => {
+        return item.id == id 
+    });
+
+    if (!route) {
+        res.status(400);
+        return;
+    } else {
+        res.status(200).json({success: true})
+    }
 })
 
 
