@@ -1,12 +1,14 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const path = require('path');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const { randomUUID } = require('crypto');   // Para generar un ID único de usuario
+import express from 'express';
+import bodyParser from 'body-parser';
+import path from 'path';
+import cors from 'cors';
+import jwt from 'jsonwebtoken'
+import { randomUUID } from 'crypto';
+import { readFile } from 'fs/promises'
+import fs from 'fs';
+import gpxParser from 'gpxparser';
 
-const fs=require('fs');
-const gpxParser = require('gpxparser');
+
 
 const secret = 'This 1s S3cr3T';
 
@@ -18,70 +20,76 @@ function parseGPX( filename ) {
     console.log(gpx.tracks[0]);   
 }
 
-parseGPX('./01.gpx')
+// parseGPX('./01.gpx')
 
 // var gpx = new DOMParser().parseFromString(fs.readFileSync('01.gpx', 'utf8'));
 
-// Base de datos de usuarios. Por comodidad ya hay uno precargado
-let users = [
-    {
-        id: '10b69d2b-26c6-4715-b510-eba42f9766f0',
-        username: 'victor',
-        fullname: 'Víctor J. González',
-        pass: '1234',
-        email: 'victor@mail.com',
-        height: 170,
-        weight: 70,
-        birthday: '01/01/2000',
-        activities: ['trail'],
-        active: true
-    },
-    {
-        id: '10b69d2b-26c6-4715-b510-eba42f9767f0',
-        username: 'pepe',
-        fullname: 'Pepe Fernández ',
-        pass: '1234',
-        email: 'pepe@mail.com',
-        height: 170,
-        weight: 70,
-        birthday: '01/01/2000',
-        activities: ['trail'],
-        active: true
-    }
-];     
+const usersFile = await readFile('./data/users.json', 'utf-8')
+const users = JSON.parse(usersFile);
 
-let routes = [
-    {
-        id: '22a22d2b-26c6-4715-b510-eba42f9767f0',
-        route_name: 'Ruta de los Calderones',
-        distance: 12270,
-        max_height: 1672,
-        min_height: 1179,
-        pos_slope: 611,
-        neg_slope: 611,
-        circular: true,
-        start_lat: 42.82393,
-        start_lon: -5.77881,
-        user: '10b69d2b-26c6-4715-b510-eba42f9766f0',
-        date: '29/01/2023',
-        desc: 'La ruta se inicia en Piedrasecha, para tomar enseguida una vereda casi paralela al río. Destaca una gran roca silícica, muy llamativa por los líquenes amarillentos que la colonizan; es El Serrón. Pronto se llega a la fuente del Manadero y un poco más allá, la Cueva de las Palomas alberga una sencilla ermita rupestre que custodia la imagen de Nuestra Señora del Manadero. Su romería se celebra el último domingo de Julio, congregando a vecinos de toda la comarca. '
-    },
-    {
-        id: '22a22d2b-26c6-4715-b510-eba42f9767f0',
-        route_name: 'Subida al Vizcodillo',
-        distance: 16390,
-        max_height: 2104,
-        min_height: 1199,
-        pos_slope: 932,
-        neg_slope: 929,
-        circular: true,
-        start_lat: 42.2367748,
-        start_lon: -6.4616487,
-        user: '10b69d2b-26c6-4715-b510-eba42f9766f0',
-        date: '07/07/2022',
-        desc: 'A 1,5km pasando Truchillas desde Truchas hay un parking con un panel indicativo para subir al lago Truchillas,hasta el cual llego y atravieso por la salida del agua que forma el rio Truchilas, para subir a una cuota dos mil en primer lugar y acto seguido al Vizcodillo.Descenso por la laguna Malicioso hasta el coche.'
-    }
-]
+const routesFile = await readFile('./data/routes.json', 'utf-8');
+const routes = JSON.parse(routesFile);
+
+// Base de datos de usuarios. Por comodidad ya hay uno precargado
+// let users = [
+//     {
+//         id: '10b69d2b-26c6-4715-b510-eba42f9766f0',
+//         username: 'victor',
+//         fullname: 'Víctor J. González',
+//         pass: '1234',
+//         email: 'victor@mail.com',
+//         height: 170,
+//         weight: 70,
+//         birthday: '01/01/2000',
+//         activities: ['trail'],
+//         active: true
+//     },
+//     {
+//         id: '10b69d2b-26c6-4715-b510-eba42f9767f0',
+//         username: 'pepe',
+//         fullname: 'Pepe Fernández ',
+//         pass: '1234',
+//         email: 'pepe@mail.com',
+//         height: 170,
+//         weight: 70,
+//         birthday: '01/01/2000',
+//         activities: ['trail'],
+//         active: true
+//     }
+// ];     
+
+// let routes = [
+//     {
+//         id: '22a22d2b-26c6-4715-b510-eba42f9767f0',
+//         route_name: 'Ruta de los Calderones',
+//         distance: 12270,
+//         max_height: 1672,
+//         min_height: 1179,
+//         pos_slope: 611,
+//         neg_slope: 611,
+//         circular: true,
+//         start_lat: 42.82393,
+//         start_lon: -5.77881,
+//         user: '10b69d2b-26c6-4715-b510-eba42f9766f0',
+//         date: '29/01/2023',
+//         desc: 'La ruta se inicia en Piedrasecha, para tomar enseguida una vereda casi paralela al río. Destaca una gran roca silícica, muy llamativa por los líquenes amarillentos que la colonizan; es El Serrón. Pronto se llega a la fuente del Manadero y un poco más allá, la Cueva de las Palomas alberga una sencilla ermita rupestre que custodia la imagen de Nuestra Señora del Manadero. Su romería se celebra el último domingo de Julio, congregando a vecinos de toda la comarca. '
+//     },
+//     {
+//         id: '22a22d2b-26c6-4715-b510-eba42f9767f0',
+//         route_name: 'Subida al Vizcodillo',
+//         distance: 16390,
+//         max_height: 2104,
+//         min_height: 1199,
+//         pos_slope: 932,
+//         neg_slope: 929,
+//         circular: true,
+//         start_lat: 42.2367748,
+//         start_lon: -6.4616487,
+//         user: '10b69d2b-26c6-4715-b510-eba42f9766f0',
+//         date: '07/07/2022',
+//         desc: 'A 1,5km pasando Truchillas desde Truchas hay un parking con un panel indicativo para subir al lago Truchillas,hasta el cual llego y atravieso por la salida del agua que forma el rio Truchilas, para subir a una cuota dos mil en primer lugar y acto seguido al Vizcodillo.Descenso por la laguna Malicioso hasta el coche.'
+//     }
+// ]
 
 
 

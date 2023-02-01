@@ -1,0 +1,26 @@
+[
+    {
+        "id": "10b69d2b-26c6-4715-b510-eba42f9766f0",
+        "username": "victor",
+        "fullname": "Víctor J. González",
+        "pass": "1234",
+        "email": "victor@mail.com",
+        "height": 170,
+        "weight": 70,
+        "birthday": "01/01/2000",
+        "activities": ["trail"],
+        "active": true
+    },
+    {
+        "id": "10b69d2b-26c6-4715-b510-eba42f9767f0",
+        "username": "pepe",
+        "fullname": "Pepe Fernández ",
+        "pass": "1234",
+        "email": "pepe@mail.com",
+        "height": 170,
+        "weight": 70,
+        "birthday": "01/01/2000",
+        "activities": ["trail"],
+        "active": true
+    }
+]     
