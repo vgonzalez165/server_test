@@ -8,6 +8,7 @@ import { readFile } from 'fs/promises'
 import fs from 'fs';
 import gpxParser from 'gpxparser';
 
+const {pathname: root} = new URL('../src', import.meta.url)
 
 
 const secret = 'This 1s S3cr3T';
@@ -110,6 +111,11 @@ app.listen( PORT, () => {
 app.get("/", (req, res, next) => {
     res.sendFile( path.join(__dirname, './index.html') );
 });
+
+
+app.get("/form", (req, res) => {
+    res.sendFile( path.join(__dirname, './form.html') );
+})
 
 
 function generateAccessToken(username) {
