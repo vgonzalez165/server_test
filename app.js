@@ -24,6 +24,8 @@ function parseGPX( filename ) {
 
 // var gpx = new DOMParser().parseFromString(fs.readFileSync('01.gpx', 'utf8'));
 
+
+// Importamos los JSON con los datos de usuarios y rutas precargados
 const usersFile = await readFile('./data/users.json', 'utf-8')
 const users = JSON.parse(usersFile);
 
