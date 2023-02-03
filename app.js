@@ -394,26 +394,48 @@ app.get('/api/route', (req, res) => {
 
 
 function parseGPX( gpx ) {
+
     // gpx = "<xml><gpx></gpx></xml>"
     let parser = new gpxParser();
     parser.parse(gpx);
     // let geojson = parser.toGeoJSON()
     // console.log(geojson);
     let json = parser.tracks[0] ;
-    console.log(json.points.length);
+
+    // Reducimos el número de puntos a aproximadamente 300
+    let ratio = Math.round(json.points.length / 300);
+    let points = json.points.filter( (_, index) => index%ratio == 0);
+    let slopes = json.slopes.filter( (_, index) => index%ratio == 0);
+    console.log(ratio);
+    console.log(json);
+    let distance = json.distance?.total;
+    let max_height = json.elevation?.max;
+    let min_height = json.elevation?.min;
+    let pos_slope = json.elevation?.pos;
+    let neg_slope = json.elevation?.neg;
+    let start_lat = json.points[0].lat;
+    let start_lon = json.points[0].lon;
+    return {
+        distance,
+        max_height,
+        min_height,
+        pos_slope,
+        neg_slope,
+        start_lat,
+        start_lon,
+        points,
+        slopes
+
+    }
 }
 
 
 app.post('/api/route', (req, res) => {
     let {route_name, id, desc, gpx} = req.body;
     if (users.find( item => item.id == id )) {
-        let geoJson = parseGPX(gpx);
         // console.log(geoJson);
-        routes.push({
-            route_name,
-            user: id,
-            desc
-        })
+        routes.push(parseGPX(gpx));
+        console.log(routes);
         res.status(200).json({
             success: true,
             msg: "Se ha añadido la ruta"
