@@ -12,21 +12,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 const secret = 'This 1s S3cr3T';
-
-
-function parseGPX( filename ) {
-    let gpx = new gpxParser();
-    gpx.parse(fs.readFileSync(filename, 'utf8'));
-    console.log("***************");
-    console.log(gpx.tracks[0]);   
-}
-
-// parseGPX('./01.gpx')
-
-// var gpx = new DOMParser().parseFromString(fs.readFileSync('01.gpx', 'utf8'));
-
 
 // Importamos los JSON con los datos de usuarios y rutas precargados
 const usersFile = await readFile('./data/users.json', 'utf-8')
@@ -38,7 +24,7 @@ const routes = JSON.parse(routesFile);
 
 
 let app = express();
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 app.use(cors())
 
 const PORT = 5000;
@@ -343,7 +329,6 @@ app.put('/api/user', (req, res) => {
 })
 
 
-
 // GET /api/routes
 app.get('/api/routes', (req, res) => {
     res.status(200)
@@ -368,41 +353,76 @@ app.get('/api/route/gpx', (req, res) => {
 
 
 app.get('/api/route', (req, res) => {
-    let filteredRoutes=[];
+    let filteredRoutes=routes;
     // Nombre de ruta ?name=XXXX
     if (req.query.name) {
-        filteredRoutes = routes.filter( item => item.route_name.toLowerCase().includes(req.query.name.toLowerCase()));
+        filteredRoutes = filteredRoutes.filter( item => item.route_name.toLowerCase().includes(req.query.name.toLowerCase()));
     }
 
     // Distancia mínima ?min_dist=XXX   (en metros)
     if (req.query.min_dist) {
-        filteredRoutes = routes.filter( item => item.distance > +req.query.min_dist );
+        filteredRoutes = filteredRoutes.filter( item => item.distance > +req.query.min_dist );
     }
 
     // Distancia máxima ?max_dist=XXX   (en metros)
     if (req.query.max_dist) {
-        filteredRoutes = routes.filter( item => item.distance < +req.query.max_dist );
+        filteredRoutes = filteredRoutes.filter( item => item.distance < +req.query.max_dist );
     }
 
     // Desnivel mínimo ?min_slope=XXX   (en metros)
     if (req.query.min_slope) {
-        filteredRoutes = routes.filter( item => item.slope > +req.query.min_slope );
+        filteredRoutes = filteredRoutes.filter( item => item.slope > +req.query.min_slope );
     }
 
     // Desnivel máximo ?max_slope=XXX   (en metros)
     if (req.query.max_slope) {
-        filteredRoutes = routes.filter( item => item.slope < +req.query.max_slope );
+        filteredRoutes = filteredRoutes.filter( item => item.slope < +req.query.max_slope );
     }
 
     // Circular ?circular=XX            (true|false)
     if (req.query.circular) {
-        filteredRoutes = routes.filter( item => item.circular != (req.query.circular  == 'false') );
+        filteredRoutes = filteredRoutes.filter( item => item.circular != (req.query.circular  == 'false') );
     }
 
     // User ?user=XX                    (identificador del usuario)
     if (req.query.user) {
-        filteredRoutes = routes.filter( item => item.user == req.query.user);
+        filteredRoutes = filteredRoutes.filter( item => item.user == req.query.user);
     }
     
     res.status(200).json(filteredRoutes);
+})
+
+
+function parseGPX( gpx ) {
+    // gpx = "<xml><gpx></gpx></xml>"
+    let parser = new gpxParser();
+    parser.parse(gpx);
+    // let geojson = parser.toGeoJSON()
+    // console.log(geojson);
+    let json = parser.tracks[0] ;
+    console.log(json.points.length);
+}
+
+
+app.post('/api/route', (req, res) => {
+    let {route_name, id, desc, gpx} = req.body;
+    if (users.find( item => item.id == id )) {
+        let geoJson = parseGPX(gpx);
+        // console.log(geoJson);
+        routes.push({
+            route_name,
+            user: id,
+            desc
+        })
+        res.status(200).json({
+            success: true,
+            msg: "Se ha añadido la ruta"
+        });
+    } else {
+        res.status(400).json({
+            success: false,
+            msg: "El id de usuario no es válido"
+        })
+    }
+
 })

@@ -5,17 +5,72 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulario subir rutas</title>
+    <style>
+        * {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+        body {
+            background-color: #00756B;
+            margin: 0;
+        }
+        form {
+            margin: auto;
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            width: 480px;
+            padding: 25px;
+            justify-content: center;   
+            background-color: #73D8AA;
+            border-radius: 6px;
+            box-shadow: 5px 5px 3px #044b45;
+        }
+        div {
+            
+            display: flex;
+            margin-bottom: 10px;
+        }
+        label {
+            width: 150px;
+        }
+
+        input, select, textarea {
+            width: 330px;
+        }
+
+        #submit {
+            margin-top: 20px;
+            width: 200px;
+            height: 30px;
+            align-self: center;
+        }
+
+    </style>
 </head>
 <body>
     <form id="form">
-        <label for="nameInput">Nombre de la ruta</label>
-        <input type="text" id="nameInput" />
+        <div id="name">
+            <label for="nameInput">Nombre de la ruta</label>
+            <input type="text" id="nameInput" />
+        </div>
 
-        <label for="userSelect">Usuario</label>
-        <select name="userSelect" id="userSelect"></select>
+        <div id="username">
+            <label for="userSelect">Usuario</label>
+            <select name="userSelect" id="userSelect"></select>
+        </div>
 
-        <input type="file" id="fileInput" />
-        <input type="submit" value="Submit" />
+        <div id="file">
+            <label for="fileInput">Fichero GPX</label>
+            <input name="fileInput" type="file" id="fileInput" />
+        </div>
+
+        <div id="desc">
+            <label for="descText">Descripción</label>
+            <textarea name="descText" id="descText" cols="30" rows="5"></textarea>
+        </div>
+
+
+        <input type="submit" id="submit" value="Submit" />
     </form>
     <script>
         // Carga de los usuarios
@@ -31,25 +86,41 @@
                 let select = document.getElementById('userSelect');
                 let usersOptions = data.map( ({id, username}) => new Option(username, id));
                 usersOptions.forEach( item => select.appendChild(item));
-                    
-                
-                
             } )
-
         
 
         // Subida del fichero
         document.getElementById("form").addEventListener("submit", function(event) {
             event.preventDefault();
-            var fileInput = document.getElementById("fileInput");
-            var file = fileInput.files[0];
-        
-            var reader = new FileReader();
+
+            // Se carga el fichero
+            let fileInput = document.getElementById("fileInput");
+            let file = fileInput.files[0];
+            let reader = new FileReader();
             reader.onload = function() {
-            // the contents of the file are in reader.result
-            var contents = reader.result;
-            // console.log(contents);
-            // do something with the contents...
+                let gpx = reader.result;
+                let route_name = document.getElementById('nameInput').value;
+                let id = document.getElementById('userSelect').value;
+                let desc = document.getElementById('descText').value;
+                fetch('http://localhost:5000/api/route', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id,
+                        route_name,
+                        desc,
+                        gpx
+                    })
+                })
+                .then( response => {
+                    if (response.status == 200) {
+                        alert('Se ha registrado correctamente la ruta')
+                    } else {
+                        alert('Ha habido un problema al subir la ruta')
+                    }
+                } )
             };
             reader.readAsText(file);
         });
