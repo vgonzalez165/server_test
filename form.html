@@ -3,19 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=<form id="form">
-  <input type="file" id="fileInput" />
-  <input type="submit" value="Submit" />
-</form>, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario subir rutas</title>
 </head>
 <body>
-
     <form id="form">
+        <label for="nameInput">Nombre de la ruta</label>
+        <input type="text" id="nameInput" />
+
+        <label for="userSelect">Usuario</label>
+        <select name="userSelect" id="userSelect"></select>
+
         <input type="file" id="fileInput" />
         <input type="submit" value="Submit" />
     </form>
+    <script>
+        // Carga de los usuarios
+        fetch('http://localhost:5000/api/users')
+            .then( response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    console.log("Error al realizar la consulta")
+                }
+            } )
+            .then( data => {
+                let select = document.getElementById('userSelect');
+                let usersOptions = data.map( ({id, username}) => new Option(username, id));
+                usersOptions.forEach( item => select.appendChild(item));
+                    
+                
+                
+            } )
 
-    <script src="form_script.js"></script>
+        
+
+        // Subida del fichero
+        document.getElementById("form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var fileInput = document.getElementById("fileInput");
+            var file = fileInput.files[0];
+        
+            var reader = new FileReader();
+            reader.onload = function() {
+            // the contents of the file are in reader.result
+            var contents = reader.result;
+            // console.log(contents);
+            // do something with the contents...
+            };
+            reader.readAsText(file);
+        });
+    </script>
 </body>
 </html>
