@@ -8,21 +8,22 @@ import { readFile } from 'fs/promises'
 import fs from 'fs';
 import gpxParser from 'gpxparser';
 
+// Para poder acceder a la variable __filename desde un módulo ES
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Clave para el JWT
 const secret = 'This 1s S3cr3T';
 
 // Importamos los JSON con los datos de usuarios y rutas precargados
 const usersFile = await readFile('./data/users.json', 'utf-8')
 const users = JSON.parse(usersFile);
-
 const routesFile = await readFile('./data/routes.json', 'utf-8');
 const routes = JSON.parse(routesFile);
 
 
-
+// Servidor web Express
 let app = express();
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(cors())
@@ -33,21 +34,30 @@ app.listen( PORT, () => {
 })
 
 
+// *************************************************************************
+// Páginas estáticas
+// *************************************************************************
+
 // Raíz. Muestra la página HTML
 app.get("/", (req, res, next) => {
     res.sendFile( path.join(__dirname, './index.html') );
 });
 
-
 app.get("/form", (req, res) => {
     res.sendFile( path.join(__dirname, './form.html') );
 })
-
 
 function generateAccessToken(username) {
     return jwt.sign(username, secret, { expiresIn: '86400s' }); // Caducidad de 1 día
   }
 
+
+
+// *************************************************************************
+// Funciones para el USUARIO
+// *************************************************************************
+
+// POST /api/login
 app.post("/api/login", (req, res) => {
     const {username, pass} = req.body;
     let user = users.find( (item) => item.username.toLowerCase() == username.toLowerCase() && item.pass == pass);
@@ -69,7 +79,7 @@ app.post("/api/login", (req, res) => {
     }
 })
 
-
+// POST /api/register
 app.post("/api/register", (req, res, next) => {
     // Estructura del JSON
     // {
@@ -137,6 +147,7 @@ app.post("/api/register", (req, res, next) => {
     }
 )
 
+// GET /api/ckeckuser
 app.get('/api/checkuser', (req, res) => {
     let username = req.query?.username;
 
@@ -170,7 +181,6 @@ app.get('/api/users', (req, res) => {
     res.status(200)
        .json(users.filter( (item) => item.active ));
 })
-
 
 
 function isValidToken(token, username) {
@@ -329,6 +339,10 @@ app.put('/api/user', (req, res) => {
 })
 
 
+// *************************************************************************
+// Funciones para las RUTAS
+// *************************************************************************
+
 // GET /api/routes
 app.get('/api/routes', (req, res) => {
     res.status(200)
@@ -336,6 +350,7 @@ app.get('/api/routes', (req, res) => {
 })
 
 
+// Para eliminar
 // GET /api/route/gpx?id=XXXX
 app.get('/api/route/gpx', (req, res) => {
     let id = req.query.id;
@@ -393,9 +408,10 @@ app.get('/api/route', (req, res) => {
 })
 
 
+// Recoge un fichero GPX y genera un fichero JSON con los datos relevantes del mismo:
+// distancia, altitud, desnivel, punto de inicio, coordenadas de los puntos de paso.
 function parseGPX( gpx ) {
 
-    // gpx = "<xml><gpx></gpx></xml>"
     let parser = new gpxParser();
     parser.parse(gpx);
     // let geojson = parser.toGeoJSON()
@@ -405,6 +421,7 @@ function parseGPX( gpx ) {
     // Reducimos el número de puntos a aproximadamente 300
     let ratio = Math.round(json.points.length / 300);
     let points = json.points.filter( (_, index) => index%ratio == 0);
+    console.log(points)
     let slopes = json.slopes.filter( (_, index) => index%ratio == 0);
     console.log(ratio);
     console.log(json);
@@ -425,26 +442,31 @@ function parseGPX( gpx ) {
         start_lon,
         points,
         slopes
-
     }
 }
 
 
 app.post('/api/route', (req, res) => {
     let {route_name, id, desc, gpx} = req.body;
-    if (users.find( item => item.id == id )) {
-        // console.log(geoJson);
-        routes.push(parseGPX(gpx));
-        console.log(routes);
+    if (!(route_name && id && desc && gpx)) {
+        res.status(400).json({
+            success: false,
+            msg: "Falta algún campo obligatorio"
+        })
+    } else if (!users.find( item => item.id == id )) {
+        res.status(409).json({
+            success: false,
+            msg: "El id de usuario no es válido"
+        })
+    } else {
+        let data = parseGPX(gpx);
+        routes.push( {...data, route_name, desc} );
+        routes.forEach( item => console.log(item.points) )
         res.status(200).json({
             success: true,
             msg: "Se ha añadido la ruta"
         });
-    } else {
-        res.status(400).json({
-            success: false,
-            msg: "El id de usuario no es válido"
-        })
+        
     }
-
 })
+
