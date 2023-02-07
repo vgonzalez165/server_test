@@ -100,6 +100,25 @@
 
     <hr>
 
+    <div id="GET-user">
+        <h2>GET /api/user?id=XXXX</h2>
+        <h2>GET /api/user?username=XXXX</h2>
+
+        <p>Devuelve todos los datos del usuario indicado en el query string</p>
+        
+        <h4>Headers</h4>
+        <pre>Authorization: {token}</pre>
+        
+        <h4>Devuelve</h4>
+        <ul>
+            <li>Status 400 si no se ha indicado el nombre de usuario o el id</li>
+            <li>Status 404 si el usuario no existe</li>
+            <li>Status 200 si el usuario se ha eliminado correctamente</li>
+        </ul>
+    </div>
+
+    <hr>
+
     <div id="DEL-user">
         <h2>DELETE /api/user?id=XXXX</h2>
         <h2>DELETE /api/user?username=XXXX</h2>
@@ -116,14 +135,6 @@
             <li>Status 404 si el usuario no existe</li>
             <li>Status 200 si el usuario se ha eliminado correctamente</li>
         </ul>
-    </div>
-
-    <hr>
-
-    <div id="GET-routes">
-        <h2>GET /api/routes</h2>
-        <p>Obtiene un listado de todas las rutas</p>
-        <p>Pendiente de finalizar, por ahora solo devuelve un listado de todas las rutas sin ningún tipo de filtrado y sin requerir token</p>
     </div>
 
     <hr>
@@ -147,23 +158,15 @@
         </ul>
     </div>
 
-    <div id="GET-user">
-        <h2>DELETE /api/user?id=XXXX</h2>
-        <h2>DELETE /api/user?username=XXXX</h2>
+    <hr>
 
-        <p>Devuelve todos los datos del usuario indicado en el query string</p>
-        
-        <h4>Headers</h4>
-        <pre>Authorization: {token}</pre>
-        
-        <h4>Devuelve</h4>
-        <ul>
-            <li>Status 400 si no se ha indicado el nombre de usuario o el id</li>
-            <li>Status 404 si el usuario no existe</li>
-            <li>Status 200 si el usuario se ha eliminado correctamente</li>
-        </ul>
+    <div id="GET-routes">
+        <h2>GET /api/routes</h2>
+        <p>Obtiene un listado de todas las rutas</p>
+        <p>SOLO PARA PRUEBAS</p>
     </div>
 
+    <hr>
 
     <div id="GET-routes">
         <h2>GET /api/route?id=XXXX</h2>
@@ -186,6 +189,7 @@
         </ul>
     </div>
 
+    <hr>
 
     <div id="POST-route">
         <h2>POST /api/route?id=XXXX</h2>
