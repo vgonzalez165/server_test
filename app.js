@@ -193,8 +193,8 @@ function isValidToken(token, username) {
 }
 
 
-// DELETE /api/users?id=XXXXX  || /api/users?username=XXXX
-app.delete('/api/users', (req, res) => {
+// DELETE /api/user?id=XXXXX  || /api/users?username=XXXX
+app.delete('/api/user', (req, res) => {
 
     let {id} = req.query;
     let {username} = req.query;
@@ -403,6 +403,11 @@ app.get('/api/route', (req, res) => {
     if (req.query.user) {
         filteredRoutes = filteredRoutes.filter( item => item.user == req.query.user);
     }
+
+    // Dif ?dif=XX                    (identificador del usuario)
+    if (req.query.user) {
+        filteredRoutes = filteredRoutes.filter( item => item.dif == req.query.dif);
+    }
     
     res.status(200).json(filteredRoutes);
 })
@@ -447,7 +452,7 @@ function parseGPX( gpx ) {
 
 
 app.post('/api/route', (req, res) => {
-    let {route_name, id, desc, gpx} = req.body;
+    let {route_name, id, desc, gpx, dif} = req.body;
     if (!(route_name && id && desc && gpx)) {
         res.status(400).json({
             success: false,
@@ -460,7 +465,7 @@ app.post('/api/route', (req, res) => {
         })
     } else {
         let data = parseGPX(gpx);
-        routes.push( {...data, route_name, desc} );
+        routes.push( {...data, route_name, desc, dif: dif?dif:1} );
         routes.forEach( item => console.log(item.points) )
         res.status(200).json({
             success: true,
