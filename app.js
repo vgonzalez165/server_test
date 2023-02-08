@@ -405,7 +405,7 @@ app.get('/api/route', (req, res) => {
     }
 
     // Dif ?dif=XX                    (identificador del usuario)
-    if (req.query.user) {
+    if (req.query.dif) {
         filteredRoutes = filteredRoutes.filter( item => item.dif == req.query.dif);
     }
     
